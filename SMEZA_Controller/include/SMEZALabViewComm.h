@@ -10,7 +10,7 @@
 #ifndef SMEZACOMM_H 
 #define SMEZACOMM_H
 
-#define DEBUG_FEEDBACK 0
+#define DEBUG_FEEDBACK 1
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -69,7 +69,7 @@ int8_t readRx();
 void dumpSplitter();
 #endif
 
-void CommInit();
+void LabViewCommInit();
 
 void CommState();
 

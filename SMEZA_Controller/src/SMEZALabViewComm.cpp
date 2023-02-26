@@ -9,23 +9,31 @@
 
 #include "SMEZALabViewComm.h"
 
-/**
- * @brief String containing all valid command keys, separated by spaces. 
- * @note "_ ping get set adj"
- */
-const char *KNOWN_COMMANDS_PTR = "_ ping get set on off";
-const char *KNOWN_PARAMETERS = "_ omnipresent address bill";
-
 char cmdArgArr[MAX_ARGUMENTS+3][MAX_ARGUMENT_LENGTH+1];
 char *recipAddrPtr = cmdArgArr[0];
 char *sendrAddrPtr = cmdArgArr[1];
 char *cmdWordPtr = cmdArgArr[2];
 
-transmission_state communicationState = idle;
+transmission_state labViewCommunicationState = idle;
 
 char rxBufferStr[256] = "";
 char *rxBuffer = rxBufferStr;
 char txBufferStr[256] = "";
+
+/**
+ * @brief String containing all valid command keys, separated by spaces. Begins with 
+ * a bell character to prevent matching of 0 length strings. 
+ * @note "\a ping get set off on"
+ */
+const char *KNOWN_COMMANDS_PTR = "\a ping get set off on";
+/**
+ * @brief String containing all valid parameter keys, separated by spaces. Begins with 
+ * a bell character to prevent matching of 0 length strings. 
+ * @note "\a omnipresent address bill powerState"
+ */
+const char *KNOWN_PARAMETERS = "\a omnipresent address bill powerState";
+
+
 
 /** @fn uint8_t addressMatches(char cmdString[])
     @brief Determines if the recipient address of the command string matches the 
@@ -69,12 +77,16 @@ int8_t matchKeyWord(char *match, const char* KNOWN_KEYS_PTR){
 int8_t parseCommand(char *cmdStringPtr){
 
     // Check if command is longer than MIN_COMMAND_LENGTH. If not, return 1. 
-    if(strlen(cmdStringPtr) < MIN_COMMAND_LENGTH)
+    if(strlen(cmdStringPtr) < MIN_COMMAND_LENGTH){
+        labViewCommunicationState = idle;
         return -1;
+    }
 
     // Check if recipient address matches DEVICE_ADDRESS. If not, return 0.
-    if(!addressMatches(cmdStringPtr))
+    if(!addressMatches(cmdStringPtr)){
+        labViewCommunicationState = idle;
         return 0;
+    }
     
     // Split the command string into parts at each space
     int8_t numArguments = splitCommand(cmdStringPtr);
@@ -166,9 +178,16 @@ int8_t parseCommand(char *cmdStringPtr){
             }
             break;
 
-        // ADJ -14- 
+        // ADJ -14- turn system power off 
         case 14:
-            sprintf(responsePayload, "Adjustment requires hardware I don't have yet! Keep up the good work!");
+            powerIsOn = 0;
+            sprintf(responsePayload, "Power is turning off...");
+            break; 
+
+        // ADJ -17- turn system power on 
+        case 18:
+            powerIsOn = 1;
+            sprintf(responsePayload, "Power is turning on...");
             break; 
 
         // default - send back unrecognized command error
@@ -194,7 +213,7 @@ int8_t parseCommand(char *cmdStringPtr){
     strcat(responseStringPtr, "\n");
 
     // Indicate that response string is ready for transmission
-    communicationState = transmissionReady;
+    labViewCommunicationState = transmissionReady;
 
     return 0;
 }
@@ -276,6 +295,9 @@ int8_t handleGet(char *argString, char *responsePayload){
     case 21: //bill
         sprintf(paramValue, "%s ", BILL);
         break;
+    case 26: //powerState
+        sprintf(paramValue, "%d ", powerIsOn);
+        break;
     default:
         sprintf(responsePayload, "Unknown Parameter:\"%s\"", argString);
         return 1;
@@ -303,6 +325,8 @@ int8_t handleSet(char *paramString, char *valueString){
         return -1;
     case 21: // "bill" - forbidden
         return -1;
+    case 26: // "powerState" - forbidden
+        return -1;
     default:
         return 1;
     }
@@ -311,21 +335,13 @@ int8_t handleSet(char *paramString, char *valueString){
 }
 
 int8_t readRx(){
-    #if defined(HAVE_HWSERIAL1) // This constant is defined in HardwareSerial.h
-    while (Serial1.available()) {
-    #else
     while (Serial.available()) {
-    #endif
         // get the new byte:
-        #if defined(HAVE_HWSERIAL1) // This constant is defined in HardwareSerial.h
-        char inChar = (char)Serial1.read();
-        #else
         char inChar = (char)Serial.read();
-        #endif
         // if the incoming character is a newline, set a flag so the main loop can
         // do something about it:
         if (inChar == '\n') {
-            communicationState = receivingComplete;
+            labViewCommunicationState = receivingComplete;
         } else {
             // add it to recievedCommand:
             strncat(rxBufferStr, &inChar, 1);
@@ -338,119 +354,75 @@ int8_t readRx(){
 
 
 
-void CommInit(){
-
-    #if(DEBUG_FEEDBACK != 0)
+void LabViewCommInit(){
     Serial.begin(115200);
-    #endif
-
-    #if defined(HAVE_HWSERIAL1) // This constant is defined in HardwareSerial.h
-    Serial1.begin(9600, SERIAL_8N1);
-    #else
-    Serial.begin(9600, SERIAL_8N1);
-    #endif
-
-    pinMode(DRIVER_ENABLE_PIN, OUTPUT);
 }
 
 
 
-#if(DEBUG_FEEDBACK >= 2)
+#if(DEBUG_FEEDBACK >= 1)
 transmission_state prevState = idle;
 #endif
 void CommState(){
     #if(DEBUG_FEEDBACK >= 1)
-    if (communicationState != prevState){
+    if (labViewCommunicationState != prevState){
         Serial.print("CommunicationState: ");
-        Serial.println(communicationState);
+        Serial.println(labViewCommunicationState);
     }
-        prevState = communicationState;
+        prevState = labViewCommunicationState;
 
     #endif
 
-    switch (communicationState){
+    switch (labViewCommunicationState){
     case idle:
-        // DriverEnable = FALSE
-        digitalWrite(DRIVER_ENABLE_PIN, LOW);
-
-#if defined(HAVE_HWSERIAL1) // This constant is defined in HardwareSerial.h
-        if (Serial1.available()){
-        #else
         if (Serial.available()){
-        #endif
+            labViewCommunicationState = busyReceiving;
             readRx();
-            communicationState = busyReceiving;
         }
         break;
 
     case busyReceiving:
-        // DriverEnable = FALSE
-        digitalWrite(DRIVER_ENABLE_PIN, LOW);
-
-        #if defined(HAVE_HWSERIAL1) // This constant is defined in HardwareSerial.h
-        if (Serial1.available())
-        #else
-        if (Serial.available())
-        #endif
+        if (Serial.available()){
             readRx();
+        }
         break; 
 
     case receivingComplete:
-        // DriverEnable = FALSE
-        digitalWrite(DRIVER_ENABLE_PIN, LOW);
 
         #if(DEBUG_FEEDBACK >= 1)
         Serial.print("RAW: ");
-        Serial.println(rxBufferStr);
+        Serial.println(rxBufferStr);;
         #endif
-        
+
         parseCommand(rxBuffer);
 
         // clear the string:
         strcpy(rxBufferStr, "");
-
         break;
-        
+
     case transmissionReady:
         // Check that there are no current transmissions going out
-        #if defined(HAVE_HWSERIAL1) // This constant is defined in HardwareSerial.h
-        if (Serial1.available()){
-        #else
-        if (Serial.available()){
+        
+        // Transmit response
+        Serial.write(txBufferStr);
+        Serial.flush();
+
+        #if(DEBUG_FEEDBACK >= 1)
+        Serial.println(txBufferStr);
+        Serial.println("---");
+        Serial.flush();
         #endif
-            //nop
-        } else {
-            // DriverEnable = TRUE
-            digitalWrite(DRIVER_ENABLE_PIN, HIGH);
 
-            // Transmit response
-            #if defined(HAVE_HWSERIAL1) // This constant is defined in HardwareSerial.h
-            Serial1.write(txBufferStr);
-            Serial1.flush();
-            #else
-            Serial.write(txBufferStr);
-            Serial.flush();
-            #endif
-
-            #if(DEBUG_FEEDBACK >= 1)
-            Serial.println(txBufferStr);
-            Serial.println("---");
-            Serial.flush();
-            #endif
-
-            communicationState = transmissionComplete;
-            // DriverEnable = FALSE
-            digitalWrite(DRIVER_ENABLE_PIN, LOW);
-        }
+        labViewCommunicationState = transmissionComplete;
         
         break;
+
     case transmissionComplete:
-        digitalWrite(DRIVER_ENABLE_PIN, LOW);
-        communicationState = idle;
+        labViewCommunicationState = idle;
         break;
 
     default:
-        communicationState = idle;
+        labViewCommunicationState = idle;
         break;
     }
 
