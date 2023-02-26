@@ -1,9 +1,20 @@
 #include <Arduino.h>
+#include "SMEZACtrlGlobals.h"
+
+#include "SMEZALabViewComm.h""
+#include "stdint.h"
+
 
 void setup() {
-  // put your setup code here, to run once:
+    // put your setup code here, to run once:
+    CommInit();
 }
 
+
+
 void loop() {
-  // put your main code here, to run repeatedly:
+
+    CommState();
+
 }
+
