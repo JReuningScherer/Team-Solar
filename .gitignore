@@ -1,0 +1,5 @@
+# gitignore file 
+# List files that should not be tracked here
+
+*.code-workspace
+*/.vscode
