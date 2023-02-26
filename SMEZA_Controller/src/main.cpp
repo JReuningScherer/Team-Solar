@@ -1,7 +1,7 @@
 #include <Arduino.h>
 #include "SMEZACtrlGlobals.h"
 
-#include "SMEZALabViewComm.h""
+#include "SMEZALabViewComm.h"
 #include "stdint.h"
 
 

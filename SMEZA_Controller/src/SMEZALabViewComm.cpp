@@ -7,7 +7,7 @@
  * 
 */
 
-#include "SMEZALabViewComm.h""
+#include "SMEZALabViewComm.h"
 
 /**
  * @brief String containing all valid command keys, separated by spaces. 
