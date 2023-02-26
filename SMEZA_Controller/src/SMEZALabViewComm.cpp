@@ -363,7 +363,7 @@ void LabViewCommInit(){
 #if(DEBUG_FEEDBACK >= 1)
 transmission_state prevState = idle;
 #endif
-void CommState(){
+void LabViewCommState(){
     #if(DEBUG_FEEDBACK >= 1)
     if (labViewCommunicationState != prevState){
         Serial.print("CommunicationState: ");

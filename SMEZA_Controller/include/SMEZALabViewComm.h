@@ -1,14 +1,14 @@
-/* SMEZAComm.h
+/* SMEZALabViewComm.h
  * Version 0.3
  * 2/8/2023
  * 
- * This is the header-file for SMEZAComm.cpp. It defines the functions used for the 
+ * This is the header-file for SMEZALabViewComm.cpp. It defines the functions used for the 
  * SMEZA Communications Protocol.
  * 
  */
 
-#ifndef SMEZACOMM_H 
-#define SMEZACOMM_H
+#ifndef SMEZALABVIEWCOMM_H 
+#define SMEZALABVIEWCOMM_H
 
 #define DEBUG_FEEDBACK 1
 
@@ -29,8 +29,6 @@
 #define MIN_COMMAND_LENGTH 7
 #define MAX_ARGUMENTS 10 
 #define MAX_ARGUMENT_LENGTH 15
-
-#define DRIVER_ENABLE_PIN 2
 
 
 /** @brief State variable for the communications bus. 
@@ -71,7 +69,7 @@ void dumpSplitter();
 
 void LabViewCommInit();
 
-void CommState();
+void LabViewCommState();
 
 
 #endif

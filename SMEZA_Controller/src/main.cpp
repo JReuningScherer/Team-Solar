@@ -29,6 +29,6 @@ void loop() {
     }
 
     // Tick State Machines 
-    CommState();
+    LabViewCommState();
 }
 
