@@ -16,9 +16,9 @@ char *cmdWordPtr = cmdArgArr[2];
 
 transmission_state labViewCommunicationState = idle;
 
-char rxBufferStr[256] = "";
+char rxBufferStr[MAX_COMMAND_LENGTH] = "";
 char *rxBuffer = rxBufferStr;
-char txBufferStr[256] = "";
+char txBufferStr[MAX_COMMAND_LENGTH] = "";
 
 /**
  * @brief String containing all valid command keys, separated by spaces. Begins with 
