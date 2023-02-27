@@ -46,8 +46,7 @@ uint32_t responseTimeoutValue = 0;
 /************************************/
 
 
-/** @fn uint8_t addressMatches(char cmdString[])
-    @brief Determines if the recipient address of the command string matches the 
+/** @brief Determines if the recipient address of the command string matches the 
     address of the unit. Recipient addresses are case sensitive and must be 3 
     characters long. 
 
@@ -55,15 +54,16 @@ uint32_t responseTimeoutValue = 0;
     value indicating whether the recipient address matches. 0 is returned if the 
     address does NOT match. 1 is returned if the address matches. 
     */
-uint8_t addressMatches(char *cmdStringPtr){
-    if (!strncmp(DEVICE_ADDRESS,cmdStringPtr,3)){
+uint8_t addressMatches(char *msgStringPtr){
+    if (!strncmp(DEVICE_ADDRESS,msgStringPtr,3)){
         return 1;
     }
-    if (!strncmp(BROADCAST_ADDRESS,cmdStringPtr,3)){
+    if (!strncmp(BROADCAST_ADDRESS,msgStringPtr,3)){
         return 2;
     }
     return 0;
 }
+
 
 /**
  * @brief checks for the presense of a keyword in a string of known keys. Returns 
@@ -227,7 +227,8 @@ int8_t parseCommand(char *cmdStringPtr){
     }
 
     // Check if recipient address matches DEVICE_ADDRESS. If not, return 0.
-    if(!addressMatches(cmdStringPtr)){
+    if(addressMatches(cmdStringPtr) != 1){
+        strcpy(labviewPassToAdjusterStr, cmdStringPtr);
         labviewCommunicationState = lbvIdle;
         return 0;
     }
@@ -548,6 +549,7 @@ int8_t parseResponse(char *respStringPtr){
     // Check if recipient address matches DEVICE_ADDRESS (ctr). If not, relay to 
     // the LabView interface 
     if(!addressMatches(respStringPtr)){
+        strcpy(adjusterPassToLabviewStr, respStringPtr);
         adjusterCommunicationState = adjIdle;
         return 0;
     }
@@ -561,10 +563,6 @@ int8_t parseResponse(char *respStringPtr){
 
 
 void AdjCommInit(){
-
-    #if(ADJUSTER_DEBUG_FEEDBACK != 0)
-    Serial.begin(115200);
-    #endif
 
     Serial1.begin(9600, SERIAL_8N1);
 
