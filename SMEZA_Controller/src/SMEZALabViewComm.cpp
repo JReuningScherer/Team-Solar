@@ -98,7 +98,7 @@ int8_t parseCommand(char *cmdStringPtr){
 
 
     // Create the response payload string
-    char responsePayloadString[248] = "";
+    char responsePayloadString[MAX_COMMAND_LENGTH-8] = "";
     char *responsePayload = responsePayloadString;
 
     switch (numArguments){
