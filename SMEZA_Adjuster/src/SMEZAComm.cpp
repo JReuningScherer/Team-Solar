@@ -23,9 +23,9 @@ char *cmdWordPtr = cmdArgArr[2];
 
 transmission_state communicationState = idle;
 
-char rxBufferStr[256] = "";
+char rxBufferStr[MAX_COMMAND_LENGTH] = "";
 char *rxBuffer = rxBufferStr;
-char txBufferStr[256] = "";
+char txBufferStr[MAX_COMMAND_LENGTH] = "";
 
 /** @fn uint8_t addressMatches(char cmdString[])
     @brief Determines if the recipient address of the command string matches the 
@@ -86,7 +86,7 @@ int8_t parseCommand(char *cmdStringPtr){
 
 
     // Create the response payload string
-    char responsePayloadString[248] = "";
+    char responsePayloadString[MAX_COMMAND_LENGTH-8] = "";
     char *responsePayload = responsePayloadString;
 
     switch (numArguments){
@@ -355,7 +355,7 @@ void CommInit(){
 
 
 
-#if(DEBUG_FEEDBACK >= 2)
+#if(DEBUG_FEEDBACK >= 1)
 transmission_state prevState = idle;
 #endif
 void CommState(){
