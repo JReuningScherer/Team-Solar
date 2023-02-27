@@ -37,7 +37,8 @@
  * should be disabled. 
  * @param receivingComplete A transmission that was being received has finished and 
  * is ready to be parsed. 
- * @param busyTransmitting A transmission is being sent by this device. 
+ * @param transmissionReady A transmission is ready to be sent and will be 
+ * transmitted as soon as possible. 
  * @param transmissionComplete Device has finished transmitting. 
  */
 enum transmission_state
