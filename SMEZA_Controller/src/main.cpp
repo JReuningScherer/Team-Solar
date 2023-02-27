@@ -1,12 +1,13 @@
 #include <Arduino.h>
 #include "SMEZACtrlGlobals.h"
 
-#include "SMEZALabViewComm.h"
+#include "SMEZACtrlComm.h"
 #include "stdint.h"
 
 void setup() {
     // put your setup code here, to run once:
     LabViewCommInit();
+    AdjCommInit();
 
     // This should be in an init function but I'm too impatient rn for that 
     pinMode(13,OUTPUT);
@@ -30,5 +31,6 @@ void loop() {
 
     // Tick State Machines 
     LabViewCommState();
+    AdjusterCommState();
 }
 
