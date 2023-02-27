@@ -39,8 +39,7 @@ char *adjusterRxBuffer = labviewRxBufferStr;
 char adjusterCommandTxStr[MAX_COMMAND_LENGTH] = "";
 char adjusterPassToLabviewStr[MAX_COMMAND_LENGTH] = "";
 adjuster_transmission_state adjusterCommunicationState = adjuster_transmission_state::adjIdle;
-
-
+uint32_t responseTimeoutValue = 0;
 
 /************************************/
 /*          SHARED FUNCTIONS        */
@@ -198,7 +197,7 @@ int8_t readLabviewRx(){
         // if the incoming character is a newline, set a flag so the main loop can
         // do something about it:
         if (inChar == '\n') {
-            labviewCommunicationState = labview_transmission_state::lbvReceivingComplete;
+            labviewCommunicationState = lbvReceivingComplete;
         } else {
             // add it to recievedCommand:
             strncat(labviewRxBufferStr, &inChar, 1);
@@ -223,13 +222,13 @@ int8_t parseCommand(char *cmdStringPtr){
 
     // Check if command is longer than MIN_COMMAND_LENGTH. If not, return 1. 
     if(strlen(cmdStringPtr) < MIN_COMMAND_LENGTH){
-        labviewCommunicationState = labview_transmission_state::lbvIdle;
+        labviewCommunicationState = lbvIdle;
         return -1;
     }
 
     // Check if recipient address matches DEVICE_ADDRESS. If not, return 0.
     if(!addressMatches(cmdStringPtr)){
-        labviewCommunicationState = labview_transmission_state::lbvIdle;
+        labviewCommunicationState = lbvIdle;
         return 0;
     }
     
@@ -358,7 +357,7 @@ int8_t parseCommand(char *cmdStringPtr){
     strcat(responseStringPtr, "\n");
 
     // Indicate that response string is ready for transmission
-    labviewCommunicationState = labview_transmission_state::lbvTransmissionReady;
+    labviewCommunicationState = lbvTransmissionReady;
 
     return 0;
 }
@@ -427,7 +426,7 @@ void LabViewCommInit(){
 
 
 #if(LABVIEW_DEBUG_FEEDBACK >= 1)
-labview_transmission_state prevState = labview_transmission_state::lbvIdle;
+labview_transmission_state prevState = lbvIdle;
 #endif
 void LabViewCommState(){
     #if(LABVIEW_DEBUG_FEEDBACK >= 1)
@@ -439,11 +438,15 @@ void LabViewCommState(){
 
     #endif
 
-    switch (labviewCommunicationState){
+    switch (labviewCommunicationState)
+    {
     case labview_transmission_state::lbvIdle:
         if (Serial.available()){
-            labviewCommunicationState = labview_transmission_state::lbvBusyReceiving;
+            labviewCommunicationState = lbvBusyReceiving;
             readLabviewRx();
+        }
+        if(strlen(adjusterPassToLabviewStr) != 0){
+            labviewCommunicationState = lbvTransmissionReady;
         }
         break;
 
@@ -484,11 +487,11 @@ void LabViewCommState(){
         break;
 
     case labview_transmission_state::lbvTransmissionComplete:
-        labviewCommunicationState = labview_transmission_state::lbvIdle;
+        labviewCommunicationState = lbvIdle;
         break;
 
     default:
-        labviewCommunicationState = labview_transmission_state::lbvIdle;
+        labviewCommunicationState = lbvIdle;
         break;
     }
 
@@ -513,7 +516,7 @@ int8_t readAdjusterRx(){
         // if the incoming character is a newline, set a flag so the main loop can
         // do something about it:
         if (inChar == '\n') {
-            adjusterCommunicationState = adjuster_transmission_state::adjReceivingComplete;
+            adjusterCommunicationState = adjReceivingComplete;
         } else {
             // add it to recievedCommand:
             strncat(adjusterRxBufferStr, &inChar, 1);
@@ -538,14 +541,14 @@ int8_t parseResponse(char *respStringPtr){
 
     // Check if command is longer than MIN_COMMAND_LENGTH. If not, return -1. 
     if(strlen(respStringPtr) < MIN_COMMAND_LENGTH){
-        adjusterCommunicationState = adjuster_transmission_state::adjIdle;
+        adjusterCommunicationState = adjIdle;
         return -1;
     }
 
     // Check if recipient address matches DEVICE_ADDRESS (ctr). If not, relay to 
     // the LabView interface 
     if(!addressMatches(respStringPtr)){
-        adjusterCommunicationState = adjuster_transmission_state::adjIdle;
+        adjusterCommunicationState = adjIdle;
         return 0;
     }
 
@@ -579,14 +582,51 @@ void AdjusterCommState(void){
         if (Serial1.available()){
             readAdjusterRx();
             adjusterCommunicationState = adjBusyReceiving;
+            break;
+        }
+
+        if (strlen(labviewPassToAdjusterStr) != 0){
+            adjusterCommunicationState = adjTransmissionReady;
         }
 
         break;
     case adjuster_transmission_state::adjTransmissionReady:
-        /* code */
+/*         if(Serial1.available()){
+            break;
+        } */
+        // DriverEnable = TRUE
+        digitalWrite(DRIVER_ENABLE_PIN, HIGH);
+        /* See if there is a labview passthrough command. If so, send it. If not, 
+        send the 
+         */
+        if (strlen(adjusterPassToLabviewStr) != 0){
+            Serial1.write(labviewPassToAdjusterStr);
+            strcpy(labviewPassToAdjusterStr, "");
+        } else {
+            Serial1.write(adjusterCommandTxStr);
+        }
+
+
+        Serial1.flush();
+
+        responseTimeoutValue = millis() + ADJUSTER_RESPONSE_TIMEOUT;
+
+        digitalWrite(DRIVER_ENABLE_PIN, LOW);
+        
+        adjusterCommunicationState = adjAwaitingReponse;
         break;
     case adjuster_transmission_state::adjAwaitingReponse:
-        /* code */
+        // DriverEnable = FALSE
+        digitalWrite(DRIVER_ENABLE_PIN, LOW);
+
+        if (Serial1.available()){
+            readAdjusterRx();
+            adjusterCommunicationState = adjBusyReceiving;
+        }
+
+        if (millis() >= responseTimeoutValue){
+            adjusterCommunicationState = adjIdle;
+        }
         break;
     case adjuster_transmission_state::adjBusyReceiving:
         // DriverEnable = FALSE
@@ -597,7 +637,13 @@ void AdjusterCommState(void){
         }
         break;
     case adjuster_transmission_state::adjReceivingComplete:
-        /* code */
+        // DriverEnable = FALSE
+        digitalWrite(DRIVER_ENABLE_PIN, LOW);
+
+        // TO DO - Implement Processing of commands
+
+        adjusterCommunicationState = adjIdle;
+
         break;
     
     default:

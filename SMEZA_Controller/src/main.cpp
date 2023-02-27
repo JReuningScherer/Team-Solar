@@ -10,9 +10,8 @@ void setup() {
     AdjCommInit();
 
     // This should be in an init function but I'm too impatient rn for that 
-    pinMode(13,OUTPUT);
-    pinMode(12,OUTPUT);
-
+    pinMode(13, OUTPUT);
+    pinMode(12, OUTPUT);
 
 }
 

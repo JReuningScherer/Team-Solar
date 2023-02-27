@@ -4,8 +4,8 @@
 #ifndef SMEZACTRLCOMM_H
 #define SMEZACTRLCOMM_H
 
-#define LABVIEW_DEBUG_FEEDBACK 1
-#define ADJUSTER_DEBUG_FEEDBACK 1
+#define LABVIEW_DEBUG_FEEDBACK 0
+#define ADJUSTER_DEBUG_FEEDBACK 0
 
 
 #include <stdio.h>
@@ -20,12 +20,15 @@
 
 // Define Minimum command length parameters. 
 #define MIN_COMMAND_LENGTH 7
-#define MAX_COMMAND_LENGTH 256
+#define MAX_COMMAND_LENGTH 81
 #define MAX_ARGUMENTS 10 
 #define MAX_ARGUMENT_LENGTH 15
 
 // Define pin for tranceiver driver enable 
 #define DRIVER_ENABLE_PIN 2
+
+// Timeout in ms for response from adjuster 
+#define ADJUSTER_RESPONSE_TIMEOUT 20
 
 // State machine enums
 /** @brief State variable for the communications bus. 
@@ -47,6 +50,8 @@ enum labview_transmission_state
     lbvTransmissionComplete
 };
 
+extern labview_transmission_state labviewCommunicationState;
+
 /** @brief State variable for the communications bus. 
  * @param adjIdle No communications being sent on bus. Default state. 
  * is ready to be parsed. 
@@ -66,6 +71,8 @@ enum adjuster_transmission_state
     adjBusyReceiving,
     adjReceivingComplete
 };
+
+extern adjuster_transmission_state adjusterCommunicationState;
 
 // Shared Functions
 uint8_t addressMatches(char *cmdStringPtr);
