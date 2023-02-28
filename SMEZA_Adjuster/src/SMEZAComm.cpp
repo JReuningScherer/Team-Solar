@@ -387,12 +387,17 @@ void CommState(){
         // DriverEnable = FALSE
         digitalWrite(DRIVER_ENABLE_PIN, LOW);
 
+        if(strlen(rxBufferStr) == MAX_COMMAND_LENGTH) 
+            // clear the string:
+            strcpy(rxBufferStr, "");
+
         #if defined(HAVE_HWSERIAL1) // This constant is defined in HardwareSerial.h
         if (Serial1.available())
         #else
         if (Serial.available())
         #endif
             readRx();
+        
         break; 
 
     case receivingComplete:
