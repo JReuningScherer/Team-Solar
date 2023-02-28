@@ -73,8 +73,10 @@ int8_t parseCommand(char *cmdStringPtr){
         return -1;
 
     // Check if recipient address matches DEVICE_ADDRESS. If not, return 0.
-    if(!addressMatches(cmdStringPtr))
+    if(!addressMatches(cmdStringPtr)){
+        communicationState = idle;
         return 0;
+    }
     
     // Split the command string into parts at each space
     int8_t numArguments = splitCommand(cmdStringPtr);
