@@ -35,7 +35,7 @@ labview_transmission_state labviewCommunicationState = labview_transmission_stat
 
 // Adjuster Globals 
 char adjusterRxBufferStr[MAX_COMMAND_LENGTH] = "";
-char *adjusterRxBuffer = labviewRxBufferStr;
+char *adjusterRxBuffer = adjusterRxBufferStr;
 char adjusterCommandTxStr[MAX_COMMAND_LENGTH] = "";
 char adjusterPassToLabviewStr[MAX_COMMAND_LENGTH] = "";
 adjuster_transmission_state adjusterCommunicationState = adjuster_transmission_state::adjIdle;
@@ -229,7 +229,12 @@ int8_t parseCommand(char *cmdStringPtr){
     // Check if recipient address matches DEVICE_ADDRESS. If not, return 0.
     if(addressMatches(cmdStringPtr) != 1){
         strcpy(labviewPassToAdjusterStr, cmdStringPtr);
+        strncat(labviewPassToAdjusterStr, "\n",1);
         labviewCommunicationState = lbvIdle;
+        #if(LABVIEW_DEBUG_FEEDBACK >= 2)
+        Serial.println(labviewPassToAdjusterStr);
+        Serial.println(strlen(labviewPassToAdjusterStr));
+        #endif
         return 0;
     }
     
@@ -427,15 +432,15 @@ void LabViewCommInit(){
 
 
 #if(LABVIEW_DEBUG_FEEDBACK >= 1)
-labview_transmission_state prevState = lbvIdle;
+labview_transmission_state prevLabState = lbvIdle;
 #endif
 void LabViewCommState(){
     #if(LABVIEW_DEBUG_FEEDBACK >= 1)
-    if (labviewCommunicationState != prevState){
-        Serial.print("CommunicationState: ");
+    if (labviewCommunicationState != prevLabState){
+        Serial.print("LabCommunicationState: ");
         Serial.println(labviewCommunicationState);
     }
-        prevState = labviewCommunicationState;
+        prevLabState = labviewCommunicationState;
 
     #endif
 
@@ -446,7 +451,11 @@ void LabViewCommState(){
             labviewCommunicationState = lbvBusyReceiving;
             readLabviewRx();
         }
-        if(strlen(adjusterPassToLabviewStr) != 0){
+        if(strlen(adjusterPassToLabviewStr) > 0){
+            #if(LABVIEW_DEBUG_FEEDBACK >= 1)
+            Serial.print("adjusterPassToLabviewStr length");
+            Serial.println(strlen(adjusterPassToLabviewStr));
+            #endif
             labviewCommunicationState = lbvTransmissionReady;
         }
         break;
@@ -472,10 +481,17 @@ void LabViewCommState(){
 
     case labview_transmission_state::lbvTransmissionReady:
         // Check that there are no current transmissions going out
+
         
         // Transmit response
-        Serial.write(labviewResponseTxStr);
-        Serial.flush();
+        if (strlen(adjusterPassToLabviewStr) > 0){
+            Serial.write(adjusterPassToLabviewStr);
+            Serial.flush();
+            strcpy(adjusterPassToLabviewStr, "");
+        } else {
+            Serial.write(labviewResponseTxStr);
+            Serial.flush();
+        }
 
         #if(LABVIEW_DEBUG_FEEDBACK >= 1)
         //Serial.println(labviewResponseTxStr);
@@ -527,14 +543,14 @@ int8_t readAdjusterRx(){
 }
 
 
-/** @brief Parses a provided command string from LabView. 
+/** @brief Parses a provided response string from adjusters. 
 
-    @returns The parseCommand() function returns an unsigned integer, with the 
+    @returns The parseResponse() function returns an unsigned integer, with the 
     value indicating the status of the parced function. 
     @retval 0 is returned for a successful parce where the address did not match.
     @retval 1 is returned for a successful parse where the address matched and the 
     command was successfully processed. 
-    @retval -1 is returned for a command string that was less than the minimum 
+    @retval -1 is returned for a reponse string that was less than the minimum 
     specified value.
  
     */
@@ -550,6 +566,11 @@ int8_t parseResponse(char *respStringPtr){
     // the LabView interface 
     if(!addressMatches(respStringPtr)){
         strcpy(adjusterPassToLabviewStr, respStringPtr);
+        strncat(adjusterPassToLabviewStr, "\n",1);
+        #if(ADJUSTER_DEBUG_FEEDBACK >= 2)
+        Serial.println(labviewPassToAdjusterStr);
+        Serial.println(strlen(labviewPassToAdjusterStr));
+        #endif
         adjusterCommunicationState = adjIdle;
         return 0;
     }
@@ -569,8 +590,20 @@ void AdjCommInit(){
     pinMode(DRIVER_ENABLE_PIN, OUTPUT);
 }
 
-
+#if(ADJUSTER_DEBUG_FEEDBACK >= 1)
+adjuster_transmission_state prevAdjState = adjIdle;
+#endif
 void AdjusterCommState(void){
+    #if(ADJUSTER_DEBUG_FEEDBACK >= 1)
+    if (adjusterCommunicationState != prevAdjState){
+        Serial.print("AdjCommunicationState: ");
+        Serial.println(adjusterCommunicationState);
+    }
+        prevAdjState = adjusterCommunicationState;
+
+    #endif
+
+
     switch (adjusterCommunicationState)
     {
     case adjuster_transmission_state::adjIdle:
@@ -583,7 +616,10 @@ void AdjusterCommState(void){
             break;
         }
 
-        if (strlen(labviewPassToAdjusterStr) != 0){
+        if (strlen(labviewPassToAdjusterStr) > 0){
+            #if(ADJUSTER_DEBUG_FEEDBACK >= 1)
+            Serial.println("Lv Command detected!");
+            #endif
             adjusterCommunicationState = adjTransmissionReady;
         }
 
@@ -597,8 +633,10 @@ void AdjusterCommState(void){
         /* See if there is a labview passthrough command. If so, send it. If not, 
         send the 
          */
-        if (strlen(adjusterPassToLabviewStr) != 0){
+        if (strlen(labviewPassToAdjusterStr) != 0){
             Serial1.write(labviewPassToAdjusterStr);
+            Serial1.flush();
+
             strcpy(labviewPassToAdjusterStr, "");
         } else {
             Serial1.write(adjusterCommandTxStr);
@@ -637,6 +675,14 @@ void AdjusterCommState(void){
     case adjuster_transmission_state::adjReceivingComplete:
         // DriverEnable = FALSE
         digitalWrite(DRIVER_ENABLE_PIN, LOW);
+
+        #if(ADJUSTER_DEBUG_FEEDBACK >= 2)
+        Serial.println(adjusterRxBuffer);
+        #endif
+
+        parseResponse(adjusterRxBuffer);
+
+        strcpy(adjusterRxBuffer, "");
 
         // TO DO - Implement Processing of commands
 
