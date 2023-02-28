@@ -6,6 +6,9 @@
 motor_controller_state xMotorState = mtrIdle;
 motor_controller_state yMotorState = mtrIdle;
 
+motor_direction xMotorDirection = none;
+motor_direction yMotorDirection = none;
+
 /**
  * @brief Initializes the motor control system 
  * 
@@ -22,19 +25,50 @@ void motorInit(void){
  * @brief Motor State Machine Tick
  * 
  */
-void MotorState(void)
+void MotorState(motor_controller_state &mtrState)
 {
+
+    switch (mtrState)
+    {
+    case mtrIdle:
+        // Motors in Brake mode 
+        break;
+    case mtrBeginAdjustment:
+        // Check Limit switch in the direction of travel. If at limit, go back to 
+        // idle
+
+        // Set motorTimeout Value
+        break;
+    case mtrBusyAdjusting:
+        // Run Motors based on motor
+        break;
+    
+    default:
+        mtrState = mtrIdle;
+        break;
+    }
 
 }
 
 /**
- * @brief Checks the limit switch corresponding to the provided direction of travel
+ * @brief Checks the limit switch corresponding to the provided direction of travel.
  * 
  * @param adjustmentDirection 
- * @return uint8_t 
+ * @return int8_t 
  */
-uint8_t checkLimit(motor_direction adjustmentDirection)
+int8_t checkLimit(motor_direction adjustmentDirection)
 {
+    switch (adjustmentDirection)
+    {
+    case posX:
+        /* code */
+        break;
+    
+    default:
+        // If none of the commands matched, 
+        return -1;
+        break;
+    }
     return 0;
 }
 
