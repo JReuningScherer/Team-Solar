@@ -66,18 +66,28 @@ void MotorState(motor_controller_state &mtrState)
  */
 int8_t checkLimit(motor_direction adjustmentDirection)
 {
+    int8_t limitValue = -1;
     switch (adjustmentDirection)
     {
     case posX:
-        /* code */
+        limitValue = digitalRead(POS_X_LIMIT_PIN);
+        break;
+    case negX:
+        limitValue = digitalRead(NEG_X_LIMIT_PIN);
+        break;
+    case posY:
+        limitValue = digitalRead(POS_Y_LIMIT_PIN);
+        break;
+    case negY:
+        limitValue = digitalRead(NEG_Y_LIMIT_PIN);
         break;
     
     default:
         // If none of the commands matched, 
-        return -1;
+        limitValue = -1;
         break;
     }
-    return 0;
+    return limitValue;
 }
 
 /**
