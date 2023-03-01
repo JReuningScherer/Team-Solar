@@ -10,8 +10,7 @@ extern const char BROADCAST_ADDRESS[4];
 extern const char BILL[27];
 
 // Motor Control Variables
-extern int16_t xMotorPosition;
-extern int16_t yMotorPosition;
+
 
 #endif
 //Full file

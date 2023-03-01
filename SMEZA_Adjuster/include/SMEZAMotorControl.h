@@ -43,9 +43,15 @@ enum motor_direction
     negY,
     none
 }; 
-extern motor_direction xMotorDirection;
-extern motor_direction yMotorDirection;
 
+motor_direction xMotorDirection;
+motor_direction yMotorDirection;
+
+int16_t xMotorTimeout;
+int16_t xMotorTimeout;
+
+extern int16_t xMotorPosition;
+extern int16_t yMotorPosition;
 
 // Initialization function
 void motorInit(void);
@@ -57,7 +63,6 @@ int8_t checkLimit(motor_direction adjustmentDirection);
 
 // Begin adjustment fxn
 void beginAdjustment(motor_direction adjustmentDirection, uint16_t numSteps);
-
 
 #endif
 // End of File
