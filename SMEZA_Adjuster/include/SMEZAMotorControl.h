@@ -5,6 +5,8 @@
 #ifndef SMEZAMOTORCONTROL_H
 #define SMEZAMOTORCONTROL_H
 
+#include <Arduino.h>
+
 #include "SMEZAGlobals.h"
 
 // Define the motor movement increments in ms 
