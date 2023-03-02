@@ -19,6 +19,7 @@
 #include "HardwareSerial.h"
 
 #include "SMEZAGlobals.h"
+#include "SMEZAMotorControl.h"
 
 //#if(DEBUG_FEEDBACK != 0)
 #include "Arduino.h"
@@ -27,7 +28,7 @@
 // Define Minimum command length. Any command strings shorter than this length are 
 // assumed to be errors. 
 #define MIN_COMMAND_LENGTH 7
-#define MAX_COMMAND_LENGTH 256
+#define MAX_COMMAND_LENGTH 81
 #define MAX_ARGUMENTS 10 
 #define MAX_ARGUMENT_LENGTH 15
 
