@@ -148,8 +148,7 @@ void SMEZAMotor::beginAdjustment(motor_direction dir, uint16_t numSteps){
 
 
     if(dir == direction){
-        adjustmentStartTime = millis();
-        adjustmentTimeout = adjustmentStartTime + (numSteps * MOTOR_STEP_SIZE_MS);
+        adjustmentTimeout = millis(); + (numSteps * MOTOR_STEP_SIZE_MS);
         state = mtrBusyAdjusting;
     } else {
         startBraking();
