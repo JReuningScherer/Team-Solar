@@ -8,9 +8,8 @@
 #include <Arduino.h>
 
 #include "SMEZAGlobals.h"
+#include "SMEZAMotor.h"
 
-// Define the motor movement increments in ms 
-#define MOTOR_STEP_SIZE_MS 100
 
 // Define the pins for the limit switches (Arduino Pins)
 #define POS_X_LIMIT_PIN 12
@@ -24,45 +23,11 @@
 #define POS_Y_MOTOR_PIN 3
 #define NEG_Y_MOTOR_PIN 11
 
-// Define motor state machine states
-enum motor_controller_state {
-    mtrIdle,
-    mtrBeginAdjustment,
-    mtrBusyAdjusting
-};
-
-
-extern motor_controller_state xMotorState;
-extern motor_controller_state yMotorState;
-
-enum motor_direction
-{
-    posX,
-    negX,
-    posY,
-    negY,
-    none
-}; 
-
-motor_direction xMotorDirection;
-motor_direction yMotorDirection;
-
-int16_t xMotorTimeout;
-int16_t xMotorTimeout;
-
-extern int16_t xMotorPosition;
-extern int16_t yMotorPosition;
+extern SMEZAMotor xMotor(POS_X_MOTOR_PIN, NEG_X_MOTOR_PIN, POS_X_LIMIT_PIN, NEG_X_LIMIT_PIN);
+extern SMEZAMotor yMotor(POS_Y_MOTOR_PIN, NEG_Y_MOTOR_PIN, POS_Y_LIMIT_PIN, NEG_Y_LIMIT_PIN);
 
 // Initialization function
 void motorInit(void);
-
-void MotorState(motor_controller_state *mtrState);
-
-// Check limit switch fxn
-int8_t checkLimit(motor_direction adjustmentDirection);
-
-// Begin adjustment fxn
-void beginAdjustment(motor_direction adjustmentDirection, uint16_t numSteps);
 
 #endif
 // End of File
