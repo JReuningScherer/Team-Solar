@@ -14,7 +14,7 @@
  * @note "_ ping get set adj"
  */
 const char *KNOWN_COMMANDS_PTR = "_ ping get set adj";
-const char *KNOWN_PARAMETERS = "_ omnipresent address bill position";
+const char *KNOWN_PARAMETERS = "_ omnipresent address bill position xposition yposition";
 const char *KNOWN_DIRECTIONS = "_ +X -X +Y -Y";
 
 
@@ -291,6 +291,12 @@ int8_t handleGet(char *argString, char *responsePayload){
     case 26: //position
         sprintf(paramValue, "X: %d Y: %d", xMotor.positionCounter, yMotor.positionCounter);
         break;
+    case 35: //xposition
+        sprintf(paramValue, "%d ", xMotor.positionCounter);
+        break;
+    case 45: //yposition
+        sprintf(paramValue, "%d ", yMotor.positionCounter);
+        break;
     default:
         sprintf(responsePayload, "Unknown Parameter:\"%s\"", argString);
         return 1;
@@ -318,6 +324,12 @@ int8_t handleSet(char *paramString, char *valueString){
         return -1;
     case 21: // "bill" - forbidden
         return -1;
+    case 26: //position
+        return -1;
+    case 35: //xposition
+        xMotor.positionCounter = atoi(valueString);
+    case 45: //yposition
+        yMotor.positionCounter = atoi(valueString);
     default:
         return 1;
     }
