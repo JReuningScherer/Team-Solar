@@ -14,7 +14,7 @@
  * @note "_ ping get set adj"
  */
 const char *KNOWN_COMMANDS_PTR = "_ ping get set adj";
-const char *KNOWN_PARAMETERS = "_ omnipresent address bill";
+const char *KNOWN_PARAMETERS = "_ omnipresent address bill position";
 const char *KNOWN_DIRECTIONS = "_ +X -X +Y -Y";
 
 
@@ -273,9 +273,9 @@ int8_t splitCommand(char *cmdStringPtr){
 
 int8_t handleGet(char *argString, char *responsePayload){
     
+    char paramValue[246] = "";
     // see if the argument string matches any of the things in KNOWN_PARAMETERS
     // temporary storage for the string responce
-    char paramValue[246] = "";
     // use a switch-case statement to get the correct parameter value 
     switch (matchKeyWord(argString, KNOWN_PARAMETERS))
     {
@@ -287,6 +287,9 @@ int8_t handleGet(char *argString, char *responsePayload){
         break;
     case 21: //bill
         sprintf(paramValue, "%s ", BILL);
+        break;
+    case 26: //position
+        sprintf(paramValue, "X: %d Y: %d", xMotor.positionCounter, yMotor.positionCounter);
         break;
     default:
         sprintf(responsePayload, "Unknown Parameter:\"%s\"", argString);
