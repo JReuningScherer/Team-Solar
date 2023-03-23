@@ -15,6 +15,8 @@
  */
 const char *KNOWN_COMMANDS_PTR = "_ ping get set adj";
 const char *KNOWN_PARAMETERS = "_ omnipresent address bill";
+const char *KNOWN_DIRECTIONS = "_ +X -X +Y -Y";
+
 
 char cmdArgArr[MAX_ARGUMENTS+3][MAX_ARGUMENT_LENGTH+1];
 char *recipAddrPtr = cmdArgArr[0];
@@ -170,7 +172,15 @@ int8_t parseCommand(char *cmdStringPtr){
 
         // ADJ -14- 
         case 14:
-            sprintf(responsePayload, "Adjustment requires hardware I don't have yet! Keep up the good work!");
+            if(!numArguments) {
+                sprintf(responsePayload, "Error: No parameter keyword found. Please try again.");
+                goto ASSEMBLE_RESPONSE;
+            }
+            if(numArguments > 2) {
+                sprintf(responsePayload, "Error: Too many arguments. Please try again.");
+                goto ASSEMBLE_RESPONSE;
+            }
+            handleAdj(responsePayload);
             break; 
 
         // default - send back unrecognized command error
@@ -311,6 +321,47 @@ int8_t handleSet(char *paramString, char *valueString){
 
     return 0;
 }
+
+
+int8_t handleAdj(char *responsePayload){
+     //#if(DEBUG_FEEDBACK >= 1)
+    Serial.println(atol(cmdArgArr[4]));
+    Serial.flush();
+//#endif 
+    
+    // see if the argument string matches any of the things in KNOWN_PARAMETERS
+    // use a switch-case statement to get the correct parameter value 
+    switch (matchKeyWord(cmdArgArr[3], KNOWN_DIRECTIONS))
+    {
+    case 1: // +X
+        motor_axis = 0;
+        adjCommandDirection = motor_direction::pos;
+        break;
+    case 4: // -X
+        motor_axis = 0;
+        adjCommandDirection = motor_direction::neg;
+        break;
+    case 7: // +Y
+        motor_axis = 1;
+        adjCommandDirection = motor_direction::pos;
+        break;
+    case 10: // -Y
+        motor_axis = 1;
+        adjCommandDirection = motor_direction::neg;
+        break;
+    default:
+        sprintf(responsePayload, "Unknown direction:\"%s\"", cmdArgArr[3]);
+        return 1;
+    }
+
+    adjCommandNumSteps = atol(cmdArgArr[4]);
+    adjCommandRecievedFlag = 1;
+    // strcat the value to responsePayload
+    sprintf(responsePayload, "OK");
+
+    return 0;
+}
+
 
 int8_t readRx(){
     #if defined(HAVE_HWSERIAL1) // This constant is defined in HardwareSerial.h

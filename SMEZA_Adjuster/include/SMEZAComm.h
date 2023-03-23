@@ -19,6 +19,7 @@
 #include "HardwareSerial.h"
 
 #include "SMEZAGlobals.h"
+#include "SMEZAMotorControl.h"
 
 //#if(DEBUG_FEEDBACK != 0)
 #include "Arduino.h"
@@ -63,6 +64,8 @@ int8_t splitCommand(char *cmdStringPtr);
 int8_t handleGet(char *paramString, char *responsePayload);
 
 int8_t handleSet(char *paramString, char *valueString);
+
+int8_t handleAdj(char *responsePayload);
 
 int8_t readRx();
 
