@@ -14,7 +14,7 @@
  * @note "_ ping get set adj"
  */
 const char *KNOWN_COMMANDS_PTR = "_ ping get set adj";
-const char *KNOWN_PARAMETERS = "_ omnipresent address bill position xposition yposition";
+const char *KNOWN_PARAMETERS = "_ omnipresent address bill position xPosition yPosition motorState limit";
 const char *KNOWN_DIRECTIONS = "_ +X -X +Y -Y";
 
 
@@ -297,6 +297,13 @@ int8_t handleGet(char *argString, char *responsePayload){
     case 45: //yposition
         sprintf(paramValue, "%d ", yMotor.positionCounter);
         break;
+    case 55: //motorState
+        sprintf(paramValue, "X: %d Y: %d ", xMotor.getMotorCurrState(), yMotor.getMotorCurrState());
+        break;
+    case 66: //limit
+        sprintf(paramValue, "%d %d %d %d" , digitalRead(POS_X_LIMIT_PIN), digitalRead(NEG_X_LIMIT_PIN), digitalRead(POS_Y_LIMIT_PIN), digitalRead(NEG_Y_LIMIT_PIN));
+        break;
+
     default:
         sprintf(responsePayload, "Unknown Parameter:\"%s\"", argString);
         return 1;
@@ -330,6 +337,10 @@ int8_t handleSet(char *paramString, char *valueString){
         xMotor.positionCounter = atoi(valueString);
     case 45: //yposition
         yMotor.positionCounter = atoi(valueString);
+    case 55: //motorState
+        return -1;
+    case 66: //limit
+        return -1;
     default:
         return 1;
     }
