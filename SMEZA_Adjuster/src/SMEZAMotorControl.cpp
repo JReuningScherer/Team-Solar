@@ -7,12 +7,12 @@
 
 
 uint8_t adjCommandRecievedFlag = 0; 
-uint8_t motor_axis = 0;
+uint8_t adjCommandAxis = 0;
 motor_direction adjCommandDirection = motor_direction::noDirection;
 uint16_t adjCommandNumSteps = 0;
 
-SMEZAMotor xMotor(POS_X_MOTOR_PIN, NEG_X_MOTOR_PIN, POS_X_LIMIT_PIN, NEG_X_LIMIT_PIN);
-SMEZAMotor yMotor(POS_Y_MOTOR_PIN, NEG_Y_MOTOR_PIN, POS_Y_LIMIT_PIN, NEG_Y_LIMIT_PIN);
+SMEZAMotor xMotor(POS_X_MOTOR_PIN, NEG_X_MOTOR_PIN, POS_X_LIMIT_PIN, NEG_X_LIMIT_PIN, 0);
+SMEZAMotor yMotor(POS_Y_MOTOR_PIN, NEG_Y_MOTOR_PIN, POS_Y_LIMIT_PIN, NEG_Y_LIMIT_PIN, 1);
 
 /**
  * @brief Initializes the motor control system 
@@ -32,8 +32,8 @@ void motorInit(void){
     pinMode(POS_Y_MOTOR_PIN, OUTPUT);
     pinMode(NEG_Y_MOTOR_PIN, OUTPUT);
 
-    SMEZAMotor xMotor(POS_X_MOTOR_PIN, NEG_X_MOTOR_PIN, POS_X_LIMIT_PIN, NEG_X_LIMIT_PIN);
-    SMEZAMotor yMotor(POS_Y_MOTOR_PIN, NEG_Y_MOTOR_PIN, POS_Y_LIMIT_PIN, NEG_Y_LIMIT_PIN);
+    SMEZAMotor xMotor(POS_X_MOTOR_PIN, NEG_X_MOTOR_PIN, POS_X_LIMIT_PIN, NEG_X_LIMIT_PIN, 0);
+    SMEZAMotor yMotor(POS_Y_MOTOR_PIN, NEG_Y_MOTOR_PIN, POS_Y_LIMIT_PIN, NEG_Y_LIMIT_PIN, 1);
 
 }
 
@@ -41,12 +41,12 @@ void tickMotorCtrl(SMEZAMotor *mtr)
 {
 
     
-    if (adjCommandRecievedFlag){
+    if (adjCommandRecievedFlag && (adjCommandAxis == mtr->AXIS_INDICATOR)){
         #if(MTR_DEBUG_FEEDBACK >= 1)
         Serial.print("\tFLAG:");
         Serial.println(adjCommandRecievedFlag);
         Serial.print("\tAXIS:");
-        Serial.println(motor_axis);
+        Serial.println(adjCommandAxis);
         Serial.print("\tDIR:");
         Serial.println(adjCommandDirection);
         Serial.print("\tSTEPS:");

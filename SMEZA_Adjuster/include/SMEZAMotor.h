@@ -41,6 +41,8 @@ class SMEZAMotor
     int32_t positionSign;
 
 public:
+    const uint8_t AXIS_INDICATOR;
+
     motor_state motorNextState = motor_state::mtrIdle;
     uint8_t motorFlags; 
     int32_t positionCounter;
@@ -50,7 +52,8 @@ public:
         uint8_t posMotorPin,
         uint8_t negMotorPin,
         uint8_t posLimitPin,
-        uint8_t negLimitPin);
+        uint8_t negLimitPin,
+        uint8_t axisIndicator);
 
     motor_state getMotorCurrState(void);
 

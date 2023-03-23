@@ -360,19 +360,19 @@ int8_t handleAdj(char *responsePayload){
     switch (matchKeyWord(cmdArgArr[3], KNOWN_DIRECTIONS))
     {
     case 1: // +X
-        motor_axis = 0;
+        adjCommandAxis = 0;
         adjCommandDirection = motor_direction::pos;
         break;
     case 4: // -X
-        motor_axis = 0;
+        adjCommandAxis = 0;
         adjCommandDirection = motor_direction::neg;
         break;
     case 7: // +Y
-        motor_axis = 1;
+        adjCommandAxis = 1;
         adjCommandDirection = motor_direction::pos;
         break;
     case 10: // -Y
-        motor_axis = 1;
+        adjCommandAxis = 1;
         adjCommandDirection = motor_direction::neg;
         break;
     default:

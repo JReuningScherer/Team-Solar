@@ -24,7 +24,7 @@ enum motor_direction
 
 
 extern uint8_t adjCommandRecievedFlag;
-extern uint8_t motor_axis;
+extern uint8_t adjCommandAxis;
 extern motor_direction adjCommandDirection;
 extern uint16_t adjCommandNumSteps;
 

@@ -4,9 +4,11 @@ SMEZAMotor::SMEZAMotor(
     uint8_t posMotorPin, 
     uint8_t negMotorPin, 
     uint8_t posLimitPin, 
-    uint8_t negLimitPin) : 
+    uint8_t negLimitPin,
+    uint8_t axisIndicator) : 
     POS_LIMIT_PIN(posLimitPin), NEG_LIMIT_PIN(negLimitPin),
-    POS_MOTOR_PIN(posMotorPin), NEG_MOTOR_PIN(negMotorPin)
+    POS_MOTOR_PIN(posMotorPin), NEG_MOTOR_PIN(negMotorPin),
+    AXIS_INDICATOR(axisIndicator)
 {
     motorCurrState = mtrIdle;
     motorNextState = mtrIdle;
