@@ -70,14 +70,16 @@ void SMEZAMotor::motorTick(void)
             digitalWrite(NEG_MOTOR_PIN, HIGH);
             if (start_of_brake_flag) {
                 adjustmentStopTime = millis();
-                        Serial.print("\tSTART:");
-                        Serial.println(this->adjustmentStartTime);
-                        Serial.print("\tSTOP:");
-                        Serial.println(this->adjustmentStopTime);
-                        Serial.print("\tDIFF:");
-                        Serial.println((adjustmentStopTime - adjustmentStartTime));
-                        Serial.print("\tSIGNED:");
-                        Serial.println(positionSign*(adjustmentStopTime - adjustmentStartTime));
+                #if(MTR_DEBUG_FEEDBACK >= 1)
+                Serial.print("\tSTART:");
+                Serial.println(this->adjustmentStartTime);
+                Serial.print("\tSTOP:");
+                Serial.println(this->adjustmentStopTime);
+                Serial.print("\tDIFF:");
+                Serial.println((adjustmentStopTime - adjustmentStartTime));
+                Serial.print("\tSIGNED:");
+                Serial.println(positionSign*(adjustmentStopTime - adjustmentStartTime));
+                #endif
                 positionCounter = positionCounter + positionSign*int32_t(adjustmentStopTime - adjustmentStartTime);
                 motorFlags = motorFlags & !(start_of_brake_flag);
             }

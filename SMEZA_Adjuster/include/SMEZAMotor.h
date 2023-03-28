@@ -10,6 +10,8 @@
 
 #include "SMEZAGlobals.h"
 
+#define MTR_DEBUG_FEEDBACK 0
+
 enum motor_state
 {
     mtrIdle,

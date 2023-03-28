@@ -10,7 +10,7 @@
 #include "SMEZAGlobals.h"
 #include "SMEZAMotor.h"
 
-#define MTR_DEBUG_FEEDBACK 1
+#define MTR_CTRL_DEBUG_FEEDBACK 0
 
 #define MILLIS_PER_STEP (uint16_t)100
 

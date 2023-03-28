@@ -42,7 +42,7 @@ void tickMotorCtrl(SMEZAMotor *mtr)
 
     
     if (adjCommandRecievedFlag && (adjCommandAxis == mtr->AXIS_INDICATOR)){
-        #if(MTR_DEBUG_FEEDBACK >= 1)
+        #if(MTR_CTRL_DEBUG_FEEDBACK >= 1)
         Serial.print("\tFLAG:");
         Serial.println(adjCommandRecievedFlag);
         Serial.print("\tAXIS:");
@@ -117,7 +117,7 @@ void tickMotorCtrl(SMEZAMotor *mtr)
         default:
             mtr->motorNextState = motor_state::mtrIdle;
         }
-        #if(MTR_DEBUG_FEEDBACK >= 1)
+        #if(MTR_CTRL_DEBUG_FEEDBACK >= 1)
         Serial.print("\tTIMEOUT:");
         Serial.println(mtr->adjTimeout);
 
