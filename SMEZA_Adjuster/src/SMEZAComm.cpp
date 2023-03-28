@@ -71,8 +71,10 @@ int8_t matchKeyWord(char *match, const char* KNOWN_KEYS_PTR){
 int8_t parseCommand(char *cmdStringPtr){
 
     // Check if command is longer than MIN_COMMAND_LENGTH. If not, return 1. 
-    if(strlen(cmdStringPtr) < MIN_COMMAND_LENGTH)
+    if(strlen(cmdStringPtr) < MIN_COMMAND_LENGTH){
+        communicationState = idle;
         return -1;
+    }
 
     // Check if recipient address matches DEVICE_ADDRESS. If not, return 0.
     if(!addressMatches(cmdStringPtr)){
@@ -351,6 +353,7 @@ int8_t handleSet(char *paramString, char *valueString){
 
 int8_t handleAdj(char *responsePayload){
      //#if(DEBUG_FEEDBACK >= 1)
+    Serial.print("ARG4: ");
     Serial.println(atol(cmdArgArr[4]));
     Serial.flush();
 //#endif 
@@ -401,10 +404,10 @@ int8_t readRx(){
         #else
         char inChar = (char)Serial.read();
         #endif
-        // if the incoming character is a newline, set a flag so the main loop can
-        // do something about it:
+        // if the incoming character is a newline stop receiving new characters and trigger parsing:
         if (inChar == '\n') {
             communicationState = receivingComplete;
+            break;
         } else {
             // add it to recievedCommand:
             strncat(rxBufferStr, &inChar, 1);
@@ -426,7 +429,7 @@ void CommInit(){
     #if defined(HAVE_HWSERIAL1) // This constant is defined in HardwareSerial.h
     Serial1.begin(9600, SERIAL_8N1);
     #else
-    Serial.begin(9600, SERIAL_8N1);
+    Serial.begin(57600, SERIAL_8N1);
     #endif
 
     pinMode(DRIVER_ENABLE_PIN, OUTPUT);
@@ -457,8 +460,9 @@ void CommState(){
         #else
         if (Serial.available()){
         #endif
-            readRx();
             communicationState = busyReceiving;
+            readRx();
+
         }
         break;
 
@@ -500,9 +504,10 @@ void CommState(){
         #if defined(HAVE_HWSERIAL1) // This constant is defined in HardwareSerial.h
         if (Serial1.available()){
         #else
-        if (Serial.available()){
+        if (!Serial.availableForWrite()){
         #endif
-            //nop
+            readRx();
+            break;
         } else {
             // DriverEnable = TRUE
             digitalWrite(DRIVER_ENABLE_PIN, HIGH);
