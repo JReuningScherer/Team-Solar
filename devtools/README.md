@@ -6,8 +6,9 @@ This file contains brief descriptions of each of the sub-folders.
 
 ## `commandSpammer`
 This is a PlatformIO project made to run on an Arduino Leonardo. When pin 2 is high,
-the Leonardo will repeatedly send a string. The string is set by sending a string 
-to the Leonardo terminated with a linefeed character (`\n`).
+the Leonardo will repeatedly send a string over UART. The string is set by sending a 
+string to the Leonardo over the USB serial connection terminated with a linefeed 
+character (`\n`).
 
 
 ## `QuickNDirtyPowerToggle`
