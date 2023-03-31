@@ -10,7 +10,7 @@
 #ifndef SMEZACOMM_H 
 #define SMEZACOMM_H
 
-#define DEBUG_FEEDBACK 1
+#define DEBUG_FEEDBACK 0
 
 #include <stdio.h>
 #include <stdlib.h>
