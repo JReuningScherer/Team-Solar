@@ -585,7 +585,7 @@ int8_t parseResponse(char *respStringPtr){
 
 void AdjCommInit(){
 
-    Serial1.begin(9600, SERIAL_8N1);
+    Serial1.begin(57600, SERIAL_8N1);
 
     pinMode(DRIVER_ENABLE_PIN, OUTPUT);
 }
