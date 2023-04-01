@@ -14,7 +14,9 @@
  * @note "_ ping get set adj"
  */
 const char *KNOWN_COMMANDS_PTR = "_ ping get set adj";
-const char *KNOWN_PARAMETERS = "_ omnipresent address bill";
+const char *KNOWN_PARAMETERS = "_ omnipresent address bill position xPosition yPosition motorState limit";
+const char *KNOWN_DIRECTIONS = "_ +X -X +Y -Y";
+
 
 char cmdArgArr[MAX_ARGUMENTS+3][MAX_ARGUMENT_LENGTH+1];
 char *recipAddrPtr = cmdArgArr[0];
@@ -69,8 +71,10 @@ int8_t matchKeyWord(char *match, const char* KNOWN_KEYS_PTR){
 int8_t parseCommand(char *cmdStringPtr){
 
     // Check if command is longer than MIN_COMMAND_LENGTH. If not, return 1. 
-    if(strlen(cmdStringPtr) < MIN_COMMAND_LENGTH)
+    if(strlen(cmdStringPtr) < MIN_COMMAND_LENGTH){
+        communicationState = idle;
         return -1;
+    }
 
     // Check if recipient address matches DEVICE_ADDRESS. If not, return 0.
     if(!addressMatches(cmdStringPtr)){
@@ -170,7 +174,15 @@ int8_t parseCommand(char *cmdStringPtr){
 
         // ADJ -14- 
         case 14:
-            sprintf(responsePayload, "Adjustment requires hardware I don't have yet! Keep up the good work!");
+            if(!numArguments) {
+                sprintf(responsePayload, "Error: No parameter keyword found. Please try again.");
+                goto ASSEMBLE_RESPONSE;
+            }
+            if(numArguments > 2) {
+                sprintf(responsePayload, "Error: Too many arguments. Please try again.");
+                goto ASSEMBLE_RESPONSE;
+            }
+            handleAdj(responsePayload);
             break; 
 
         // default - send back unrecognized command error
@@ -263,9 +275,9 @@ int8_t splitCommand(char *cmdStringPtr){
 
 int8_t handleGet(char *argString, char *responsePayload){
     
+    char paramValue[246] = "";
     // see if the argument string matches any of the things in KNOWN_PARAMETERS
     // temporary storage for the string responce
-    char paramValue[246] = "";
     // use a switch-case statement to get the correct parameter value 
     switch (matchKeyWord(argString, KNOWN_PARAMETERS))
     {
@@ -278,6 +290,22 @@ int8_t handleGet(char *argString, char *responsePayload){
     case 21: //bill
         sprintf(paramValue, "%s ", BILL);
         break;
+    case 26: //position
+        sprintf(paramValue, "X: %d Y: %d", xMotor.positionCounter, yMotor.positionCounter);
+        break;
+    case 35: //xposition
+        sprintf(paramValue, "%d ", xMotor.positionCounter);
+        break;
+    case 45: //yposition
+        sprintf(paramValue, "%d ", yMotor.positionCounter);
+        break;
+    case 55: //motorState
+        sprintf(paramValue, "X: %d Y: %d ", xMotor.getMotorCurrState(), yMotor.getMotorCurrState());
+        break;
+    case 66: //limit
+        sprintf(paramValue, "%d %d %d %d" , digitalRead(POS_X_LIMIT_PIN), digitalRead(NEG_X_LIMIT_PIN), digitalRead(POS_Y_LIMIT_PIN), digitalRead(NEG_Y_LIMIT_PIN));
+        break;
+
     default:
         sprintf(responsePayload, "Unknown Parameter:\"%s\"", argString);
         return 1;
@@ -305,12 +333,64 @@ int8_t handleSet(char *paramString, char *valueString){
         return -1;
     case 21: // "bill" - forbidden
         return -1;
+    case 26: //position
+        return -1;
+    case 35: //xposition
+        xMotor.positionCounter = atoi(valueString);
+    case 45: //yposition
+        yMotor.positionCounter = atoi(valueString);
+    case 55: //motorState
+        return -1;
+    case 66: //limit
+        return -1;
     default:
         return 1;
     }
 
     return 0;
 }
+
+
+int8_t handleAdj(char *responsePayload){
+     //#if(DEBUG_FEEDBACK >= 1)
+    Serial.print("ARG4: ");
+    Serial.println(atol(cmdArgArr[4]));
+    Serial.flush();
+//#endif 
+    
+    // see if the argument string matches any of the things in KNOWN_PARAMETERS
+    // use a switch-case statement to get the correct parameter value 
+    switch (matchKeyWord(cmdArgArr[3], KNOWN_DIRECTIONS))
+    {
+    case 1: // +X
+        adjCommandAxis = 0;
+        adjCommandDirection = motor_direction::pos;
+        break;
+    case 4: // -X
+        adjCommandAxis = 0;
+        adjCommandDirection = motor_direction::neg;
+        break;
+    case 7: // +Y
+        adjCommandAxis = 1;
+        adjCommandDirection = motor_direction::pos;
+        break;
+    case 10: // -Y
+        adjCommandAxis = 1;
+        adjCommandDirection = motor_direction::neg;
+        break;
+    default:
+        sprintf(responsePayload, "Unknown direction:\"%s\"", cmdArgArr[3]);
+        return 1;
+    }
+
+    adjCommandNumSteps = atol(cmdArgArr[4]);
+    adjCommandRecievedFlag = 1;
+    // strcat the value to responsePayload
+    sprintf(responsePayload, "OK");
+
+    return 0;
+}
+
 
 int8_t readRx(){
     #if defined(HAVE_HWSERIAL1) // This constant is defined in HardwareSerial.h
@@ -324,10 +404,10 @@ int8_t readRx(){
         #else
         char inChar = (char)Serial.read();
         #endif
-        // if the incoming character is a newline, set a flag so the main loop can
-        // do something about it:
+        // if the incoming character is a newline stop receiving new characters and trigger parsing:
         if (inChar == '\n') {
             communicationState = receivingComplete;
+            break;
         } else {
             // add it to recievedCommand:
             strncat(rxBufferStr, &inChar, 1);
@@ -349,7 +429,7 @@ void CommInit(){
     #if defined(HAVE_HWSERIAL1) // This constant is defined in HardwareSerial.h
     Serial1.begin(9600, SERIAL_8N1);
     #else
-    Serial.begin(9600, SERIAL_8N1);
+    Serial.begin(57600, SERIAL_8N1);
     #endif
 
     pinMode(DRIVER_ENABLE_PIN, OUTPUT);
@@ -380,8 +460,9 @@ void CommState(){
         #else
         if (Serial.available()){
         #endif
-            readRx();
             communicationState = busyReceiving;
+            readRx();
+
         }
         break;
 
@@ -423,9 +504,10 @@ void CommState(){
         #if defined(HAVE_HWSERIAL1) // This constant is defined in HardwareSerial.h
         if (Serial1.available()){
         #else
-        if (Serial.available()){
+        if (!Serial.availableForWrite()){
         #endif
-            //nop
+            readRx();
+            break;
         } else {
             // DriverEnable = TRUE
             digitalWrite(DRIVER_ENABLE_PIN, HIGH);
