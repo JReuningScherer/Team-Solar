@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include <stdint.h>
+#include "SMEZAMotorControl.h"
 
 #ifndef SMEZALED_H
 #define SMEZALED_H
@@ -16,8 +17,8 @@ enum led_pattern
 
 #define ADJ_IN_PROGRESS_PERIOD      500
 #define ADJ_IN_PROGRESS_HIGHTIME    200
-#define LIMIT_TRIPPED_PERIOD        300
-#define LIMIT_TRIPPED_HIGHTIME      150
+#define LIMIT_TRIPPED_PERIOD        200
+#define LIMIT_TRIPPED_HIGHTIME      100
 
 void ledInit();
 
