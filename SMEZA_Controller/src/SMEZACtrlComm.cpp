@@ -522,9 +522,9 @@ void LabViewCommState(){
 
 
 /**
- * @brief Reads USB serial connected to LabView
+ * @brief Reads RS485 Serial connected to the adjusters
  * 
- * @return int8_t Always returns 0. Ff it doesn't then something is very wrong. 
+ * @return int8_t Always returns 0. If it doesn't then something is very wrong. 
  */
 int8_t readAdjusterRx(){
     while (Serial1.available()) {
