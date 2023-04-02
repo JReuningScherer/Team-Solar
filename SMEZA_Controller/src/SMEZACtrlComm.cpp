@@ -567,7 +567,7 @@ int8_t parseResponse(char *respStringPtr){
     if(!addressMatches(respStringPtr)){
         strcpy(adjusterPassToLabviewStr, respStringPtr);
         strncat(adjusterPassToLabviewStr, "\n",1);
-        #if(ADJUSTER_DEBUG_FEEDBACK >= 2)
+        #if(ADJUSTER_DEBUG_FEEDBACK >= 3)
         Serial.println(labviewPassToAdjusterStr);
         Serial.println(strlen(labviewPassToAdjusterStr));
         #endif
@@ -596,7 +596,9 @@ adjuster_transmission_state prevAdjState = adjIdle;
 void AdjusterCommState(void){
     #if(ADJUSTER_DEBUG_FEEDBACK >= 1)
     if (adjusterCommunicationState != prevAdjState){
-        Serial.print("AdjCommunicationState: ");
+        Serial.print("PrevAdjCommunicationState: ");
+        Serial.print(prevAdjState);
+        Serial.print("\tAdjCommunicationState: ");
         Serial.println(adjusterCommunicationState);
     }
         prevAdjState = adjusterCommunicationState;
@@ -619,7 +621,7 @@ void AdjusterCommState(void){
 
         if (strlen(labviewPassToAdjusterStr) > 0){
             #if(ADJUSTER_DEBUG_FEEDBACK >= 1)
-            Serial.println("Lv Command detected!");
+            Serial.println("Command from LabView detected!");
             #endif
             adjusterCommunicationState = adjTransmissionReady;
         }
@@ -657,6 +659,14 @@ void AdjusterCommState(void){
         digitalWrite(DRIVER_ENABLE_PIN, LOW);
 
         if (Serial1.available()){
+            #if(ADJUSTER_DEBUG_FEEDBACK >= 2)
+            Serial.print("Serial1 has ");
+            Serial.print(Serial1.available());
+            Serial.print(" bytes available! First char is '");
+            Serial.print(Serial1.peek());
+            Serial.print("'");
+            #endif
+            
             readAdjusterRx();
             adjusterCommunicationState = adjBusyReceiving;
         }
@@ -677,7 +687,7 @@ void AdjusterCommState(void){
         // DriverEnable = FALSE
         digitalWrite(DRIVER_ENABLE_PIN, LOW);
 
-        #if(ADJUSTER_DEBUG_FEEDBACK >= 2)
+        #if(ADJUSTER_DEBUG_FEEDBACK >= 3)
         Serial.println(adjusterRxBuffer);
         #endif
 
