@@ -16,7 +16,7 @@
 #define POS_X_MOTOR_PIN 10
 #define NEG_X_MOTOR_PIN 9
 #define POS_Y_MOTOR_PIN 3
-#define NEG_Y_MOTOR_PIN 11
+#define NEG_Y_MOTOR_PIN 8
 
 // Define system variables 
 extern int omnipresent;
