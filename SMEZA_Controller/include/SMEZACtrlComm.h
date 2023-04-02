@@ -5,7 +5,7 @@
 #define SMEZACTRLCOMM_H
 
 #define LABVIEW_DEBUG_FEEDBACK 0
-#define ADJUSTER_DEBUG_FEEDBACK 1
+#define ADJUSTER_DEBUG_FEEDBACK 2
 
 
 #include <stdio.h>
@@ -27,8 +27,10 @@
 // Define pin for tranceiver driver enable 
 #define DRIVER_ENABLE_PIN 2
 
-// Timeout in ms for response from adjuster 
+// Timeout in ms to wait for a response from an adjuster 
 #define ADJUSTER_RESPONSE_TIMEOUT 20
+// Timeout in ms for a response to complete. 
+#define ADJUSTER_RESPONSE_LENGTH_TIMEOUT 20
 
 // State machine enums
 /** @brief State variable for the communications bus. 
