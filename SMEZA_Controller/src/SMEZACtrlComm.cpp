@@ -610,11 +610,12 @@ void AdjusterCommState(void){
         // DriverEnable = FALSE
         digitalWrite(DRIVER_ENABLE_PIN, LOW);
 
+        /*
         if (Serial1.available()){
             readAdjusterRx();
             adjusterCommunicationState = adjBusyReceiving;
             break;
-        }
+        }*/
 
         if (strlen(labviewPassToAdjusterStr) > 0){
             #if(ADJUSTER_DEBUG_FEEDBACK >= 1)
