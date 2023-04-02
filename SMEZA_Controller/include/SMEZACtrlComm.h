@@ -5,7 +5,7 @@
 #define SMEZACTRLCOMM_H
 
 #define LABVIEW_DEBUG_FEEDBACK 0
-#define ADJUSTER_DEBUG_FEEDBACK 2
+#define ADJUSTER_DEBUG_FEEDBACK 0
 
 
 #include <stdio.h>
