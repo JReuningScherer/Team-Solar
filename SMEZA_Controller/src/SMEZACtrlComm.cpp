@@ -39,7 +39,7 @@ char *adjusterRxBuffer = adjusterRxBufferStr;
 char adjusterCommandTxStr[MAX_COMMAND_LENGTH] = "";
 char adjusterPassToLabviewStr[MAX_COMMAND_LENGTH] = "";
 adjuster_transmission_state adjusterCommunicationState = adjuster_transmission_state::adjIdle;
-uint32_t responseTimeoutValue = 0;
+uint32_t adjusterStateTimeoutValue = 0;
 
 /************************************/
 /*          SHARED FUNCTIONS        */
@@ -522,9 +522,9 @@ void LabViewCommState(){
 
 
 /**
- * @brief Reads USB serial connected to LabView
+ * @brief Reads RS485 Serial connected to the adjusters
  * 
- * @return int8_t Always returns 0. Ff it doesn't then something is very wrong. 
+ * @return int8_t Always returns 0. If it doesn't then something is very wrong. 
  */
 int8_t readAdjusterRx(){
     while (Serial1.available()) {
@@ -567,7 +567,7 @@ int8_t parseResponse(char *respStringPtr){
     if(!addressMatches(respStringPtr)){
         strcpy(adjusterPassToLabviewStr, respStringPtr);
         strncat(adjusterPassToLabviewStr, "\n",1);
-        #if(ADJUSTER_DEBUG_FEEDBACK >= 2)
+        #if(ADJUSTER_DEBUG_FEEDBACK >= 3)
         Serial.println(labviewPassToAdjusterStr);
         Serial.println(strlen(labviewPassToAdjusterStr));
         #endif
@@ -585,7 +585,7 @@ int8_t parseResponse(char *respStringPtr){
 
 void AdjCommInit(){
 
-    Serial1.begin(9600, SERIAL_8N1);
+    Serial1.begin(57600, SERIAL_8N1);
 
     pinMode(DRIVER_ENABLE_PIN, OUTPUT);
 }
@@ -596,7 +596,9 @@ adjuster_transmission_state prevAdjState = adjIdle;
 void AdjusterCommState(void){
     #if(ADJUSTER_DEBUG_FEEDBACK >= 1)
     if (adjusterCommunicationState != prevAdjState){
-        Serial.print("AdjCommunicationState: ");
+        Serial.print("PrevAdjCommunicationState: ");
+        Serial.print(prevAdjState);
+        Serial.print("\tAdjCommunicationState: ");
         Serial.println(adjusterCommunicationState);
     }
         prevAdjState = adjusterCommunicationState;
@@ -610,15 +612,16 @@ void AdjusterCommState(void){
         // DriverEnable = FALSE
         digitalWrite(DRIVER_ENABLE_PIN, LOW);
 
+        /*
         if (Serial1.available()){
             readAdjusterRx();
             adjusterCommunicationState = adjBusyReceiving;
             break;
-        }
+        }*/
 
         if (strlen(labviewPassToAdjusterStr) > 0){
             #if(ADJUSTER_DEBUG_FEEDBACK >= 1)
-            Serial.println("Lv Command detected!");
+            Serial.println("Command from LabView detected!");
             #endif
             adjusterCommunicationState = adjTransmissionReady;
         }
@@ -645,7 +648,7 @@ void AdjusterCommState(void){
 
         Serial1.flush();
 
-        responseTimeoutValue = millis() + ADJUSTER_RESPONSE_TIMEOUT;
+        adjusterStateTimeoutValue = millis() + ADJUSTER_RESPONSE_TIMEOUT;
 
         digitalWrite(DRIVER_ENABLE_PIN, LOW);
         
@@ -656,11 +659,23 @@ void AdjusterCommState(void){
         digitalWrite(DRIVER_ENABLE_PIN, LOW);
 
         if (Serial1.available()){
+            #if(ADJUSTER_DEBUG_FEEDBACK >= 2)
+            Serial.print("Serial1 has ");
+            Serial.print(Serial1.available());
+            Serial.print(" bytes available! First char is '");
+            Serial.print(Serial1.peek());
+            Serial.print("'");
+            #endif
+            
             readAdjusterRx();
+            adjusterStateTimeoutValue = millis() + ADJUSTER_RESPONSE_LENGTH_TIMEOUT;
             adjusterCommunicationState = adjBusyReceiving;
         }
 
-        if (millis() >= responseTimeoutValue){
+        if (millis() >= adjusterStateTimeoutValue){
+            #if(ADJUSTER_DEBUG_FEEDBACK >= 2)
+            Serial.println("Serial1 Timed out!");
+            #endif
             adjusterCommunicationState = adjIdle;
         }
         break;
@@ -671,12 +686,18 @@ void AdjusterCommState(void){
         if (Serial1.available()){
             readAdjusterRx();
         }
+        if (millis() >= adjusterStateTimeoutValue){
+            #if(ADJUSTER_DEBUG_FEEDBACK >= 2)
+            Serial.println("Serial1 Response Length Timed out!");
+            #endif
+            adjusterCommunicationState = adjReceivingComplete;
+        }
         break;
     case adjuster_transmission_state::adjReceivingComplete:
         // DriverEnable = FALSE
         digitalWrite(DRIVER_ENABLE_PIN, LOW);
 
-        #if(ADJUSTER_DEBUG_FEEDBACK >= 2)
+        #if(ADJUSTER_DEBUG_FEEDBACK >= 3)
         Serial.println(adjusterRxBuffer);
         #endif
 

@@ -3,4 +3,5 @@
 
 *.code-workspace
 */.vscode
+*/.pio
 *.dwf3work
