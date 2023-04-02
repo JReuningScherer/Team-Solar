@@ -39,7 +39,7 @@ char *adjusterRxBuffer = adjusterRxBufferStr;
 char adjusterCommandTxStr[MAX_COMMAND_LENGTH] = "";
 char adjusterPassToLabviewStr[MAX_COMMAND_LENGTH] = "";
 adjuster_transmission_state adjusterCommunicationState = adjuster_transmission_state::adjIdle;
-uint32_t responseTimeoutValue = 0;
+uint32_t adjusterStateTimeoutValue = 0;
 
 /************************************/
 /*          SHARED FUNCTIONS        */
@@ -648,7 +648,7 @@ void AdjusterCommState(void){
 
         Serial1.flush();
 
-        responseTimeoutValue = millis() + ADJUSTER_RESPONSE_TIMEOUT;
+        adjusterStateTimeoutValue = millis() + ADJUSTER_RESPONSE_TIMEOUT;
 
         digitalWrite(DRIVER_ENABLE_PIN, LOW);
         
@@ -668,10 +668,14 @@ void AdjusterCommState(void){
             #endif
             
             readAdjusterRx();
+            adjusterStateTimeoutValue = millis() + ADJUSTER_RESPONSE_LENGTH_TIMEOUT;
             adjusterCommunicationState = adjBusyReceiving;
         }
 
-        if (millis() >= responseTimeoutValue){
+        if (millis() >= adjusterStateTimeoutValue){
+            #if(ADJUSTER_DEBUG_FEEDBACK >= 2)
+            Serial.println("Serial1 Timed out!");
+            #endif
             adjusterCommunicationState = adjIdle;
         }
         break;
@@ -681,6 +685,12 @@ void AdjusterCommState(void){
 
         if (Serial1.available()){
             readAdjusterRx();
+        }
+        if (millis() >= adjusterStateTimeoutValue){
+            #if(ADJUSTER_DEBUG_FEEDBACK >= 2)
+            Serial.println("Serial1 Response Length Timed out!");
+            #endif
+            adjusterCommunicationState = adjReceivingComplete;
         }
         break;
     case adjuster_transmission_state::adjReceivingComplete:
