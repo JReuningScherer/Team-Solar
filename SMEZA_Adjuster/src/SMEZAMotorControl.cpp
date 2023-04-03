@@ -9,7 +9,7 @@
 uint8_t adjCommandRecievedFlag = 0; 
 uint8_t adjCommandAxis = 0;
 motor_direction adjCommandDirection = motor_direction::noDirection;
-uint16_t adjCommandNumSteps = 0;
+uint32_t adjCommandNumSteps = 0;
 
 SMEZAMotor xMotor(POS_X_MOTOR_PIN, NEG_X_MOTOR_PIN, POS_X_LIMIT_PIN, NEG_X_LIMIT_PIN, 0);
 SMEZAMotor yMotor(POS_Y_MOTOR_PIN, NEG_Y_MOTOR_PIN, POS_Y_LIMIT_PIN, NEG_Y_LIMIT_PIN, 1);

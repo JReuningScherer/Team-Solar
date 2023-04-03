@@ -12,7 +12,7 @@
 
 #define MTR_CTRL_DEBUG_FEEDBACK 0
 
-#define MILLIS_PER_STEP (uint16_t)100
+#define MILLIS_PER_STEP (uint32_t)100
 
 // Variables for incoming command storage 
 enum motor_direction
@@ -26,7 +26,7 @@ enum motor_direction
 extern uint8_t adjCommandRecievedFlag;
 extern uint8_t adjCommandAxis;
 extern motor_direction adjCommandDirection;
-extern uint16_t adjCommandNumSteps;
+extern uint32_t adjCommandNumSteps;
 
 extern SMEZAMotor xMotor;
 extern SMEZAMotor yMotor;
