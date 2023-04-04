@@ -3,7 +3,8 @@
 #define SMEZAGLOBALS_H
 
 #include <stdint.h>
-
+#include "Arduino.h"
+#include <string.h>
 // Define Pin Constants 
 
 // Define the pins for the limit switches (Arduino Pins)
@@ -20,9 +21,11 @@
 
 // Define system variables 
 extern int omnipresent;
-extern const char DEVICE_ADDRESS[4];
+extern char DEVICE_ADDRESS[4];
 extern const char BROADCAST_ADDRESS[4];
-extern const char BILL[27];
+extern char BILL[27];
 
 #endif
 //Full file
+
+void readAddressSetting();
