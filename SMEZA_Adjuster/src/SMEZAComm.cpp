@@ -202,7 +202,7 @@ int8_t parseCommand(char *cmdStringPtr){
     char *responseStringPtr = txBufferStr;
     strcpy(responseStringPtr, sendrAddrPtr);
     strcat(responseStringPtr, " ");
-    strcat(responseStringPtr, recipAddrPtr);
+    strcat(responseStringPtr, DEVICE_ADDRESS);
     strcat(responseStringPtr, " ");
     strcat(responseStringPtr, responsePayloadString);
     strcat(responseStringPtr, "\n");
